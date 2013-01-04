@@ -18,29 +18,42 @@ public class CameraScreenActivity extends Activity {
 
 	public static final String EXTRA_AUTO_SHOOT = "EXTRA_AUTO_SHOOT";
 
-	private TextView mCameraView;
+	private CameraPreviewView mCameraView;
 
 	private Button mShootButton;
 
 	@Override
 	protected void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
+		unlockScreen();
 		// TODO below should probably be moved somewhere else
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
 		setContentView(R.layout.camera_screen_activity);
 		findViews();
 		initViews();
-		unlockScreen();
 	}
 
 	private void initViews() {
 		mShootButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				GestureSensorService.bindAndSetSensorEnabled(CameraScreenActivity.this, false);
+//				mCameraView.takePicture();
+				mCameraView.acquireCamera();
 			}
 		});
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		mCameraView.acquireCamera();
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		mCameraView.releaseCameraAndPreview();
 	}
 
 	private void unlockScreen() {
@@ -57,7 +70,7 @@ public class CameraScreenActivity extends Activity {
 
 	public static void launchNewTask(Context context, boolean auto_shoot) {
 		Intent intent = createLaunchIntent(context, auto_shoot);
-		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		context.startActivity(intent);
 	}
 
@@ -68,7 +81,7 @@ public class CameraScreenActivity extends Activity {
 	}
 	
 	private void findViews() {
-		mCameraView = (TextView) findViewById(R.id.camera_view);
+		mCameraView = (CameraPreviewView) findViewById(R.id.camera_view);
 		mShootButton = (Button) findViewById(R.id.shoot_button);
 	}
 }
