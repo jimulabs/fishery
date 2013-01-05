@@ -20,16 +20,22 @@
         android:theme="@style/Theme.Sherlock.Light" >
         <service android:name="com.jimulabs.shake_camera.GestureSensorService" />
 
-        <activity android:name="com.jimulabs.shake_camera.CameraScreenActivity"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
-            android:screenOrientation="landscape">
+        <activity
+            android:name="com.jimulabs.shake_camera.CameraScreenActivity"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity android:name="com.jimulabs.shake_camera.WelcomeActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.jimulabs.shake_camera.WelcomeActivity" >
+        <activity
+            android:name="com.jimulabs.shake_camera.ExpActivity"
+            android:screenOrientation="landscape"
+            android:label="@string/title_activity_exp" >
         </activity>
     </application>
 

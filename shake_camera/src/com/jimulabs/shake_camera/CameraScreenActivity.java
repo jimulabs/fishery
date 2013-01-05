@@ -53,7 +53,7 @@ public class CameraScreenActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		mCameraView.releaseCameraAndPreview();
+		mCameraView.releaseCamera();
 	}
 
 	private void unlockScreen() {
