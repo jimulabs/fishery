@@ -311,7 +311,7 @@ public class CameraManager {
     	// UI and cause exception like this:
     	// CalledFromWrongThreadException: Only the original thread that created
     	// a view hierarchy can touch its views.
-    	mCamera = android.hardware.Camera.open(cameraId);
+    	mCamera = android.hardware.Camera.open();
     	if (mCamera != null) {
     		mCameraProxy = new CameraProxy();
     		return mCameraProxy;

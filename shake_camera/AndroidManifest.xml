@@ -10,8 +10,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <uses-sdk
-        android:minSdkVersion="9"
-        android:targetSdkVersion="15" />
+        android:minSdkVersion="8"
+        android:targetSdkVersion="17" />
 
     <application
         android:name="com.jimulabs.shake_camera.ShakeCameraApplication"
