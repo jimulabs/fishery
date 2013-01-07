@@ -18,11 +18,9 @@ package com.android.camera;
 
 import java.io.IOException;
 
-import com.android.camera.CameraManager.CameraProxy;
-import com.android.camera.CameraManager.OpenCameraHandler;
-
 import android.annotation.TargetApi;
 import android.graphics.SurfaceTexture;
+import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.AutoFocusMoveCallback;
 import android.hardware.Camera.ErrorCallback;
@@ -311,7 +309,11 @@ public class CameraManager {
     	// UI and cause exception like this:
     	// CalledFromWrongThreadException: Only the original thread that created
     	// a view hierarchy can touch its views.
-    	mCamera = android.hardware.Camera.open();
+    	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+			mCamera = openCameraGingerbread(cameraId);
+		} else {
+			mCamera = android.hardware.Camera.open();
+		}    	
     	if (mCamera != null) {
     		mCameraProxy = new CameraProxy();
     		return mCameraProxy;
@@ -320,7 +322,12 @@ public class CameraManager {
     	}
     }
 
-    public class CameraProxy {
+    @TargetApi(Build.VERSION_CODES.GINGERBREAD)
+	private Camera openCameraGingerbread(int cameraId) {
+    	return android.hardware.Camera.open(cameraId);
+	}
+
+	public class CameraProxy {
         private CameraProxy() {
             assert(mCamera != null);
         }

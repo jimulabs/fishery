@@ -1,10 +1,15 @@
 package com.jimulabs.shake_camera;
 
 
+import com.jimulabs.shake_camera.CameraPreviewView.CameraPreviewCallback;
+import com.jimulabs.shake_camera.SensorGestureDetector.SensorGestureListener;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Vibrator;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
@@ -22,6 +27,10 @@ public class CameraScreenActivity extends Activity {
 
 	private Button mShootButton;
 
+	private TextView mCountdown;
+
+	private SensorGestureDetector mGestureDetector;
+
 	@Override
 	protected void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
@@ -32,14 +41,49 @@ public class CameraScreenActivity extends Activity {
 		setContentView(R.layout.camera_screen_activity);
 		findViews();
 		initViews();
+		mGestureDetector = new SensorGestureDetector(this, new SensorGestureListener() {
+			@Override
+			public void onShaken(int times) {
+				Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+				vibrator.vibrate(100);
+				shootInSeconds();
+			}
+		});
+	}
+
+	private void shootInSeconds() {
+		int seconds = 5;
+		int interval = 1;
+		mGestureDetector.setEnabled(false);
+		new CountDownTimer(seconds*1000, interval*1000) {
+			@Override
+			public void onTick(long millisUntilFinished) {
+				int count = (int) (millisUntilFinished / 1000) - 1;
+				mCountdown.setText(count+"");
+				if (mCountdown.getVisibility()==View.GONE) {
+					mCountdown.setVisibility(View.VISIBLE);
+				}
+			}			
+			@Override
+			public void onFinish() {
+				mCameraView.takePicture();
+				mCountdown.setVisibility(View.GONE);
+				mGestureDetector.setEnabled(true);
+			}
+		}.start();
 	}
 
 	private void initViews() {
 		mShootButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-//				mCameraView.takePicture();
-				mCameraView.acquireCamera();
+				mCameraView.takePicture();
+			}
+		});
+		mCameraView.setCallback(new CameraPreviewCallback() {
+			@Override
+			public void onCameraReady() {
+				shootInSeconds();
 			}
 		});
 	}
@@ -48,12 +92,14 @@ public class CameraScreenActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		mCameraView.acquireCamera();
+		mGestureDetector.setEnabled(true);
 	}
 	
 	@Override
 	protected void onPause() {
 		super.onPause();
 		mCameraView.releaseCamera();
+		mGestureDetector.setEnabled(false);
 	}
 
 	private void unlockScreen() {
@@ -83,5 +129,6 @@ public class CameraScreenActivity extends Activity {
 	private void findViews() {
 		mCameraView = (CameraPreviewView) findViewById(R.id.camera_view);
 		mShootButton = (Button) findViewById(R.id.shoot_button);
+		mCountdown = (TextView) findViewById(R.id.countdown);
 	}
 }

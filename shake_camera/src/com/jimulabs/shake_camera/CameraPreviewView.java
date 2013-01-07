@@ -7,7 +7,10 @@ import com.android.camera.CameraManager;
 import com.android.camera.CameraManager.CameraProxy;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.Parameters;
@@ -16,6 +19,8 @@ import android.hardware.Camera.Size;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
+import android.provider.MediaStore.Audio.Media;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -164,6 +169,15 @@ public class CameraPreviewView extends ViewGroup implements Callback {
     	}
     }
     
+    public static interface CameraPreviewCallback {
+    	void onCameraReady();
+    }
+	private CameraPreviewCallback mCallback;
+
+	public void setCallback(CameraPreviewCallback callback) {
+		mCallback = callback;
+	}
+	
 	public void acquireCamera() {
 		Log.d(LOG_TAG, "Trying to acquire camera...");
 		final Handler h = new Handler(Looper.getMainLooper());
@@ -173,11 +187,15 @@ public class CameraPreviewView extends ViewGroup implements Callback {
 				mCamera = camera;
 				Log.d(LOG_TAG, "Camera acquired:" + mCamera);
 				h.post(new Runnable() {
+
 					@Override
 					public void run() {
 						Activity activity = (Activity)getContext();
 						if (mCamera != null && !activity.isFinishing()) {
 							initLockedCamera();
+							if (mCallback!=null) {
+								mCallback.onCameraReady();
+							}
 						} else {
 							Toast.makeText(getContext(),
 									"Failed to open camera.",
@@ -234,8 +252,19 @@ public class CameraPreviewView extends ViewGroup implements Callback {
 						@Override
 						public void onPictureTaken(byte[] data,
 								Camera camera) {
-							Toast.makeText(getContext(), "picture taken!",
-									Toast.LENGTH_SHORT).show();
+//							Toast.makeText(getContext(), "picture taken!",
+//									Toast.LENGTH_SHORT).show();
+							ContentResolver contentResolver = getContext().getContentResolver();
+							Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
+							String title = "ShakenPicture";
+							String description = "Picture taken by shaking";
+							String uri = MediaStore.Images.Media.insertImage(contentResolver, bm, title, description);
+							if (uri==null) {
+								Toast.makeText(getContext(), "Failed to save picture.", Toast.LENGTH_SHORT).show();
+							} else {
+								Toast.makeText(getContext(), "Picture saved! Shake again to take another one.", Toast.LENGTH_SHORT).show();
+							}
+							mCamera.startPreviewAsync();
 						}
 					};
 					camera.takePicture(null, null, jpeg);
